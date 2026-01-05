@@ -5,6 +5,20 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>iOS Lock Screen - ДОДО Доставка</title>
   
+  <!-- Yandex.Metrika counter -->
+  <script type="text/javascript">
+      (function(m,e,t,r,i,k,a){
+          m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
+          m[i].l=1*new Date();
+          for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
+          k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)
+      })(window, document,'script','https://mc.yandex.ru/metrika/tag.js?id=106143579', 'ym');
+
+      ym(106143579, 'init', {ssr:true, webvisor:true, clickmap:true, ecommerce:"dataLayer", accurateTrackBounce:true, trackLinks:true});
+  </script>
+  <noscript><div><img src="https://mc.yandex.ru/watch/106143579" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
+  <!-- /Yandex.Metrika counter -->
+  
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   
@@ -154,12 +168,12 @@
     function LiveActivity() {
       const orderStatuses = [
         {
-          title: 'Будет в 16:30–16:20',
+          title: 'Будет в 16:20–16:30',
           description: 'Скоро начнут готовить',
           icon: Hourglass
         },
         {
-          title: 'Будет в 16:30–16:20',
+          title: 'Будет в 16:20–16:30',
           description: 'Еду вовсю готовят',
           icon: ChefHat
         },
@@ -218,7 +232,7 @@
               boxShadow: '0 10px 40px rgba(0, 0, 0, 0.6)',
             }}
           >
-            {/* ерхняя часть с логотипом и названием */}
+            {/* Верхняя часть с логотипом и названием */}
             <div className="flex items-center gap-3 mb-4">
               <div className="w-10 h-10 flex items-center justify-center flex-shrink-0">
                 <Frame2 />
@@ -240,7 +254,7 @@
                 </p>
               </div>
               
-              {/* Круговой прогресс с 4 сгментами */}
+              {/* Круговой прогресс с 4 сегментами */}
               <div className="relative flex-shrink-0">
                 <svg className="w-16 h-16 -rotate-90" viewBox="0 0 64 64">
                   {/* Нижний слой: 4 полупрозрачных сегмента с пробелами */}
@@ -413,7 +427,7 @@
               <LiveActivity />
             </div>
 
-            {/* Кнопки фонарика и камеры */}
+            {/* Кнопки фонарика и камер�� */}
             <div className="flex items-center justify-between mb-6">
               {/* Кнопка фонарика */}
               <button 
