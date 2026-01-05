@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>iOS Lock Screen - ДОДО Доставка</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- React and ReactDOM -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  
+  <!-- Babel Standalone for JSX -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      overflow: hidden;
+    }
+    
+    #root {
+      width: 100%;
+      height: 100vh;
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+
+    // SVG paths для логотипа ДОДО
+    const svgPaths = {
+      p146fff40: "M58 46.0141C55.3 47.8141 50.4 50.2141 43.9 50.6141C40.2 50.9141 35.8 50.4141 32.5 49.5141C32.5 50.6141 32.3 51.7141 32.2 52.8141C34 53.3141 37.2 53.9141 41.9 54.0141C41.7 55.3141 40.4 59.5141 37.2 62.2141C43.1 62.4141 48.5 60.1141 50.1 57.1141C48.4 57.6141 45.7 58.2141 42.8 58.1141C43 57.8141 43.1 57.5141 43.2 57.2141C48.2 57.0141 53.7 55.3141 54.8 51.2141C52.9 52.5141 48.6 54.0141 44.1 54.2141C44.2 53.9141 44.2 53.6141 44.2 53.3141C50.1 52.7141 56.3 50.1141 58 46.0141Z",
+      p15b54f00: "M32.7 15.9141C33.6 15.6141 34.8 16.5141 35.5 17.8141C36.2 19.1141 36 20.4141 35.1 20.7141C34.2 21.0141 33 20.2141 32.4 18.8141C32.3 18.6141 32.2 18.4141 32.2 18.3141H32.4C32.7 18.6141 33 18.6141 33.2 18.5141C33.5 18.3141 33.5 17.8141 33.2 17.3141C33 16.9141 32.6 16.5141 32.2 16.6141L32.1 16.5141C32.3 16.2141 32.5 16.0141 32.7 15.9141ZM38.8 29.3141C35 28.5141 30.7 27.3141 28.5 24.0141C28.5 23.9141 28.4 23.9141 28.3 23.9141C28.2 23.9141 28.2 24.0141 28.2 24.1141C28.2 24.3141 28.2 24.5141 28.3 24.7141L28 24.8141C27.4 24.0141 27.3 23.0141 27.9 22.2141C28.7 21.2141 30.5 21.3141 31.5 21.9141L31.4 22.2141C30.9 22.1141 30.3 22.1141 29.9 22.4141C29.6 22.6141 29.5 22.9141 29.7 23.3141C31.6 26.8141 37 27.5141 43.4 27.0141C44.1 26.9141 44.2 26.6141 44.3 26.3141C44.9 24.1141 45.9 22.1141 47.4 20.6141C46.2 20.8141 45.1 20.8141 44.2 20.9141C40.9 21.1141 39 20.7141 38.4 20.2141L38.5 19.9141C38.9 20.0141 39.2 20.0141 39.3 19.9141C39.4 19.8141 39.3 19.7141 39.2 19.5141C38.6 18.9141 35.7 16.0141 35.7 16.0141C35.4 13.5141 31.8 13.5141 30.4 15.9141L29.7 15.8141C29.8 15.3141 30.1 14.8141 30.3 14.5141C27.3 15.2141 25.6 17.9141 25.3 20.5141C24 31.6141 40.9 29.0141 45.7 33.5141C45.8 33.6141 46 33.9141 46.2 33.7141C46.4 33.1141 44.2 30.5141 38.8 29.3141Z",
+      p2485c980: "M4.20001 55.5141C6.70001 55.0141 9.10001 54.6141 9.10001 54.6141L9.40001 53.3141C8.30001 53.2141 6.10001 53.3141 4.20001 53.3141V55.5141Z",
+      p2515e700: "M17.2 71.9141C23 68.7141 25.9 65.7141 28 62.9141C31.9 64.6141 35.7 65.4141 39.1 65.4141C45.5 65.4141 50.9 62.5141 53.7 57.2141C56.6 55.5141 58.5 51.9141 58.7 49.3141C60.5 47.0141 60.8 44.1141 60.3 42.2141C60.2 41.7141 59.8 41.7141 59.1 42.1141C53.4 45.5141 47.8 47.2141 42.5 47.2141C39.3 47.2141 36 46.7141 32.5 45.7141C32.2 41.9141 31.5 38.8141 31.2 36.9141C30.7 34.4141 31.3 32.5141 34.1 32.5141C36.1 32.5141 39.9 33.0141 42.9 34.4141C45.9 35.8141 47.6 38.4141 48.9 38.4141C49.4 38.4141 49.9 38.1141 49.9 37.0141C49.9 34.8141 49.1 31.4141 48.2 30.1141C51 29.9141 53.2 30.0141 54.4 30.1141C57 30.6141 57.1 31.9141 57.6 32.7141C58.1 33.5141 59 33.9141 60 33.9141C61.9 33.9141 63.1 32.9141 63.1 29.3141C63.1 21.4141 58.1 17.6141 52.9 17.6141C48.6 17.6141 47 18.5141 42.9 18.5141C40 18.5141 37.6 12.6141 34.3 11.9141C32.9 8.71411 29.6 8.31411 27.6 9.91411C25.8 8.81411 22.9 9.41411 22.8 11.4141C20.7 10.8141 18 11.9141 19.2 14.6141C14.1 14.7141 13.1 19.3141 16.6 19.8141C12.1 22.3141 14.2 26.7141 17.9 25.8141C18.2 28.9141 19.4 33.9141 19.4 37.4141C19.4 42.2141 17.2 43.3141 14.2 43.3141C11.8 43.3141 2.4 40.8064 2.98023e-06 40.2064V43.6064C2.4 44.2064 11.9 46.5141 14.6 46.5141C19.3 46.5141 21.9 43.7141 21.9 38.5141C21.9 32.1141 19.8 26.2141 20.5 22.5141L20.3 22.3141C18 24.7141 16.4 24.1141 16.3 23.3141C16 21.7141 18.7 19.8141 20.3 19.1141C20.3 19.0141 20.4 18.9141 20.4 18.8141C18.9 19.0141 17.2 18.8141 17.1 17.8141C17 16.6141 19.5 15.4141 22.8 15.7141C22.9 15.6141 22.9 15.6141 23 15.5141C22.8 15.4141 22.6 15.3141 22.3 15.2141C21.5 14.8141 21.2 14.0141 21.5 13.5141C21.8 12.9141 22.7 12.7141 23.5 12.7141C24.7 12.7141 25.7 13.0141 26.4 13.3141C26.5 13.3141 26.6 13.2141 26.6 13.2141C26.3 13.0141 26.1 12.8141 26 12.5141C25.8 12.2141 25.7 11.7141 26.1 11.4141C26.6 11.0141 27.7 10.9141 28.8 11.9141C29 12.1141 29.2 12.3141 29.4 12.5141C29.5 12.5141 29.6 12.5141 29.8 12.4141C29.6 12.1141 29.5 11.9141 29.4 11.6141C29.3 11.2141 29.5 10.9141 29.9 10.7141C30.4 10.6141 30.9 10.8141 31.2 11.2141C31.5 11.7141 31.7 12.3141 31.8 12.7141C29.8 13.1141 23.7 14.5141 23.7 21.9141C23.7 29.1141 29.7 36.7141 29.7 47.9141C29.7 52.0141 28.8 56.1141 25.1 60.8141C22.2 64.5141 17.7 68.0141 10.7 70.9141C11.9 71.5141 13.3 71.8141 14.8 71.8141H17.2V71.9141ZM45.5 26.4141C46.2 24.3141 46.8 22.7141 48 21.5141C49.2 20.2141 50.5 19.8141 53.5 19.8141C57.6 19.8141 61 23.9141 61 29.7141C61 30.6141 59.9 30.5141 59.5 29.8141C58.1 27.4141 56.2 27.0141 53.3 26.8141C51.1 26.7141 48.5 26.9141 46.1 27.0141C45.5 26.9141 45.4 26.6141 45.5 26.4141ZM32.5 49.5141C35.7 50.4141 40.2 50.9141 43.9 50.6141C50.4 50.1141 55.3 47.7141 58 46.0141C56.4 50.2141 50.2 52.7141 44.2 53.5141C44.2 53.8141 44.1 54.1141 44.1 54.4141C48.6 54.2141 52.9 52.7141 54.8 51.4141C53.7 55.5141 48.2 57.1141 43.2 57.4141C43.1 57.7141 42.9 58.0141 42.8 58.3141C45.7 58.4141 48.5 57.8141 50.1 57.3141C48.6 60.1141 43.5 62.4141 38.2 62.4141C35.6 62.4141 32.4 61.9141 29.6 60.6141C31.6 56.7141 32.3 53.0141 32.5 49.5141Z",
+    };
+
+    // Компонент Frame2 (логотип ДОДО)
+    function Frame2() {
+      return (
+        <div className="relative size-full">
+          <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 71 71">
+            <g id="Frame 2">
+              <g clipPath="url(#clip0_6_26)">
+                <rect fill="#FF6900" height="71" id="Rectangle 1" rx="20" width="71" />
+                <path d={svgPaths.p2515e700} fill="black" id="Vector" />
+                <path d={svgPaths.p2485c980} fill="black" id="Vector_2" />
+                <path d={svgPaths.p15b54f00} fill="white" id="Vector_3" />
+                <path d={svgPaths.p146fff40} fill="white" id="Vector_4" />
+              </g>
+            </g>
+            <defs>
+              <clipPath id="clip0_6_26">
+                <rect fill="white" height="71" rx="35.5" width="71" />
+              </clipPath>
+            </defs>
+          </svg>
+        </div>
+      );
+    }
+
+    // Lucide Icons компоненты
+    const Hourglass = ({ className }) => (
+      <svg 
+        xmlns="http://www.w3.org/2000/svg" 
+        width="24" 
+        height="24" 
+        viewBox="0 0 24 24" 
+        fill="none" 
+        stroke="currentColor" 
+        strokeWidth="2" 
+        strokeLinecap="round" 
+        strokeLinejoin="round" 
+        className={className}
+      >
+        <path d="M5 22h14"/>
+        <path d="M5 2h14"/>
+        <path d="M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22"/>
+        <path d="M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2"/>
+      </svg>
+    );
+
+    const ChefHat = ({ className }) => (
+      <svg 
+        xmlns="http://www.w3.org/2000/svg" 
+        width="24" 
+        height="24" 
+        viewBox="0 0 24 24" 
+        fill="none" 
+        stroke="currentColor" 
+        strokeWidth="2" 
+        strokeLinecap="round" 
+        strokeLinejoin="round" 
+        className={className}
+      >
+        <path d="M17 21a1 1 0 0 0 1-1v-5.35c0-.457.316-.844.727-1.041a4 4 0 0 0-2.134-7.589 5 5 0 0 0-9.186 0 4 4 0 0 0-2.134 7.588c.411.198.727.585.727 1.041V20a1 1 0 0 0 1 1Z"/>
+        <path d="M6 17h12"/>
+      </svg>
+    );
+
+    const Car = ({ className }) => (
+      <svg 
+        xmlns="http://www.w3.org/2000/svg" 
+        width="24" 
+        height="24" 
+        viewBox="0 0 24 24" 
+        fill="none" 
+        stroke="currentColor" 
+        strokeWidth="2" 
+        strokeLinecap="round" 
+        strokeLinejoin="round" 
+        className={className}
+      >
+        <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/>
+        <circle cx="7" cy="17" r="2"/>
+        <path d="M9 17h6"/>
+        <circle cx="17" cy="17" r="2"/>
+      </svg>
+    );
+
+    const Flag = ({ className }) => (
+      <svg 
+        xmlns="http://www.w3.org/2000/svg" 
+        width="24" 
+        height="24" 
+        viewBox="0 0 24 24" 
+        fill="none" 
+        stroke="currentColor" 
+        strokeWidth="2" 
+        strokeLinecap="round" 
+        strokeLinejoin="round" 
+        className={className}
+      >
+        <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/>
+        <line x1="4" x2="4" y1="22" y2="15"/>
+      </svg>
+    );
+
+    // Компонент LiveActivity
+    function LiveActivity() {
+      const orderStatuses = [
+        {
+          title: 'Будет в 16:30–16:20',
+          description: 'Скоро начнут готовить',
+          icon: Hourglass
+        },
+        {
+          title: 'Будет в 16:30–16:20',
+          description: 'Еду вовсю готовят',
+          icon: ChefHat
+        },
+        {
+          title: 'Еще 15–20 минут',
+          description: 'Курьер едет к вам',
+          icon: Car
+        },
+        {
+          title: 'Заказ доставлен',
+          description: 'Приятного аппетита',
+          icon: Flag
+        }
+      ];
+
+      const [currentStatusIndex, setCurrentStatusIndex] = useState(0);
+      const [segmentProgress, setSegmentProgress] = useState(0);
+
+      // Автоматическая смена статусов каждые 5 секунд (4 статуса за 20 секунд)
+      useEffect(() => {
+        const statusInterval = setInterval(() => {
+          setCurrentStatusIndex((prev) => {
+            if (prev < orderStatuses.length - 1) {
+              return prev + 1;
+            }
+            return 0; // Возвращаемся к началу
+          });
+          setSegmentProgress(0);
+        }, 5000);
+
+        return () => clearInterval(statusInterval);
+      }, []);
+
+      // Анимация прогресса сегмента
+      useEffect(() => {
+        setSegmentProgress(0);
+        const progressInterval = setInterval(() => {
+          setSegmentProgress((prev) => {
+            if (prev >= 100) return 100;
+            return prev + (100 / 50); // 5 секунд = 50 тиков по 100мс
+          });
+        }, 100);
+
+        return () => clearInterval(progressInterval);
+      }, [currentStatusIndex]);
+
+      const currentStatus = orderStatuses[currentStatusIndex];
+      const CurrentIcon = currentStatus.icon;
+
+      return (
+        <div className="relative">
+          {/* Live Activity Widget */}
+          <div 
+            className="bg-[#2c2c2e] rounded-[40px] p-5 shadow-2xl"
+            style={{
+              boxShadow: '0 10px 40px rgba(0, 0, 0, 0.6)',
+            }}
+          >
+            {/* ерхняя часть с логотипом и названием */}
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 flex items-center justify-center flex-shrink-0">
+                <Frame2 />
+              </div>
+              <h2 className="text-white m-0">ДОДО</h2>
+            </div>
+
+            {/* Разделительная линия */}
+            <div className="h-[1px] bg-white/20 mb-4" style={{ borderRadius: '2px' }}></div>
+
+            {/* Основная информация */}
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex-1 min-w-0">
+                <h1 className="text-white m-0" style={{ fontWeight: 800, fontSize: '22px' }}>
+                  {currentStatus.title}
+                </h1>
+                <p className="text-white/80 m-0 text-lg" style={{ fontWeight: 400 }}>
+                  {currentStatus.description}
+                </p>
+              </div>
+              
+              {/* Круговой прогресс с 4 сгментами */}
+              <div className="relative flex-shrink-0">
+                <svg className="w-16 h-16 -rotate-90" viewBox="0 0 64 64">
+                  {/* Нижний слой: 4 полупрозрачных сегмента с пробелами */}
+                  {[0, 1, 2, 3].map((segmentIndex) => {
+                    const radius = 28;
+                    const circumference = 2 * Math.PI * radius;
+                    const segmentLength = circumference / 4;
+                    const gapLength = 8;
+                    const adjustedSegmentLength = segmentLength - gapLength;
+                    const startOffset = segmentLength * segmentIndex + (gapLength / 2);
+
+                    return (
+                      <circle
+                        key={`bg-${segmentIndex}`}
+                        cx="32"
+                        cy="32"
+                        r={radius}
+                        fill="none"
+                        stroke="rgba(255, 255, 255, 0.3)"
+                        strokeWidth="5"
+                        strokeDasharray={`${adjustedSegmentLength} ${circumference - adjustedSegmentLength}`}
+                        strokeDashoffset={-startOffset}
+                      />
+                    );
+                  })}
+                  
+                  {/* Верхний слой: белые сегменты с пробелами, заполняются поочередно */}
+                  {[0, 1, 2, 3].map((segmentIndex) => {
+                    const radius = 28;
+                    const circumference = 2 * Math.PI * radius;
+                    const segmentLength = circumference / 4;
+                    const gapLength = 8;
+                    const adjustedSegmentLength = segmentLength - gapLength;
+                    const startOffset = segmentLength * segmentIndex + (gapLength / 2);
+                    
+                    const isCompleted = segmentIndex < currentStatusIndex;
+                    const isCurrent = segmentIndex === currentStatusIndex;
+                    
+                    let visibleLength;
+                    if (isCompleted) {
+                      visibleLength = adjustedSegmentLength;
+                    } else if (isCurrent) {
+                      visibleLength = adjustedSegmentLength * (segmentProgress / 100);
+                    } else {
+                      visibleLength = 0;
+                    }
+
+                    return (
+                      <circle
+                        key={`progress-${segmentIndex}`}
+                        cx="32"
+                        cy="32"
+                        r={radius}
+                        fill="none"
+                        stroke="white"
+                        strokeWidth="5"
+                        strokeDasharray={`${visibleLength} ${circumference}`}
+                        strokeDashoffset={-startOffset}
+                        style={{ 
+                          transition: isCurrent ? 'stroke-dasharray 0.1s linear' : 'none'
+                        }}
+                      />
+                    );
+                  })}
+                </svg>
+                {/* Иконка в центре */}
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="w-9 h-9 bg-white rounded-full flex items-center justify-center">
+                    <CurrentIcon className="w-5 h-5 text-black" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // Главный компонент App
+    function App() {
+      const [currentTime, setCurrentTime] = useState(new Date());
+
+      useEffect(() => {
+        const timer = setInterval(() => {
+          setCurrentTime(new Date());
+        }, 1000);
+
+        return () => clearInterval(timer);
+      }, []);
+
+      const hours = currentTime.getHours().toString().padStart(2, '0');
+      const minutes = currentTime.getMinutes().toString().padStart(2, '0');
+      
+      const days = ['Воскресенье', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'];
+      const months = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'];
+      
+      const dayName = days[currentTime.getDay()];
+      const day = currentTime.getDate();
+      const month = months[currentTime.getMonth()];
+
+      return (
+        <div 
+          className="min-h-screen flex flex-col relative"
+          style={{
+            backgroundImage: 'url(https://images.unsplash.com/photo-1682687982468-4584ff11f88a?w=1200&q=80)',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+          }}
+        >
+          {/* iOS Status Bar */}
+          <div className="flex items-center justify-between px-6 pt-3 pb-2">
+            {/* Левая часть - DODO RUS */}
+            <div className="text-white flex-1" style={{ fontSize: '15px', fontWeight: 600 }}>
+              DODO RUS
+            </div>
+            
+            {/* Dynamic Island - по центру */}
+            <div className="bg-black rounded-full flex-shrink-0 relative flex items-center justify-start pl-4" style={{ width: '126px', height: '37px' }}>
+              {/* Иконка замка */}
+              <svg width="14" height="16" viewBox="0 0 14 16" fill="none">
+                <rect x="2" y="7" width="10" height="8" rx="2" fill="white" fillOpacity="0.9"/>
+                <path d="M4 7V5C4 3.34315 5.34315 2 7 2C8.65685 2 10 3.34315 10 5V7" stroke="white" strokeOpacity="0.9" strokeWidth="2" strokeLinecap="round"/>
+                <circle cx="7" cy="11" r="1" fill="black" fillOpacity="0.7"/>
+              </svg>
+            </div>
+            
+            {/* Правая часть - индикаторы */}
+            <div className="flex items-center gap-1 flex-1 justify-end">
+              {/* Cellular Signal */}
+              <svg width="18" height="12" viewBox="0 0 18 12" fill="none">
+                <rect x="0" y="8" width="3" height="4" rx="0.5" fill="white" fillOpacity="0.9"/>
+                <rect x="5" y="5" width="3" height="7" rx="0.5" fill="white" fillOpacity="0.9"/>
+                <rect x="10" y="2" width="3" height="10" rx="0.5" fill="white" fillOpacity="0.9"/>
+                <rect x="15" y="0" width="3" height="12" rx="0.5" fill="white" fillOpacity="0.9"/>
+              </svg>
+              {/* WiFi - iOS Style */}
+              <svg width="18" height="14" viewBox="0 0 18 14" fill="none">
+                {/* Точка */}
+                <circle cx="9" cy="12" r="1.5" fill="white" fillOpacity="0.9"/>
+                {/* Маленькая дуга */}
+                <path d="M6 9C7 8.3 8 8 9 8C10 8 11 8.3 12 9" stroke="white" strokeOpacity="0.9" strokeWidth="2" strokeLinecap="round"/>
+                {/* Большая дуга */}
+                <path d="M3 6C5 4.5 7 4 9 4C11 4 13 4.5 15 6" stroke="white" strokeOpacity="0.9" strokeWidth="2" strokeLinecap="round"/>
+              </svg>
+              {/* Battery */}
+              <svg width="27" height="13" viewBox="0 0 27 13" fill="none">
+                <rect x="0.5" y="0.5" width="22" height="11" rx="2.5" stroke="white" strokeOpacity="0.4"/>
+                <path opacity="0.4" d="M24 4V8C25.3333 7.66667 26 7 26 6C26 5 25.3333 4.33333 24 4Z" fill="white"/>
+                <rect x="2" y="2" width="18" height="8" rx="1.5" fill="white" fillOpacity="0.9"/>
+              </svg>
+            </div>
+          </div>
+
+          {/* Время и дата по центру */}
+          <div className="flex-1 flex flex-col items-center justify-start" style={{ marginTop: '50px' }}>
+            <div className="text-white text-center">
+              <div style={{ fontSize: '18px', fontWeight: 600, textShadow: '0 1px 5px rgba(0,0,0,0.3)', marginBottom: '8px' }}>
+                {dayName}, {day} {month}
+              </div>
+              <div style={{ fontSize: '100px', fontWeight: 700, lineHeight: '1', textShadow: '0 2px 10px rgba(0,0,0,0.3)' }}>
+                {hours}:{minutes}
+              </div>
+            </div>
+          </div>
+
+          {/* Нижняя часть - кнопки и Live Activity */}
+          <div className="px-6 pb-8">
+            {/* Live Activity над кнопками */}
+            <div className="w-full max-w-md mx-auto mb-6">
+              <LiveActivity />
+            </div>
+
+            {/* Кнопки фонарика и камеры */}
+            <div className="flex items-center justify-between mb-6">
+              {/* Кнопка фонарика */}
+              <button 
+                className="w-16 h-16 rounded-full flex items-center justify-center backdrop-blur-xl"
+                style={{ 
+                  background: 'rgba(255, 255, 255, 0.12)',
+                  border: '1px solid rgba(255, 255, 255, 0.15)',
+                  boxShadow: '0 4px 20px rgba(0, 0, 0, 0.4)'
+                }}
+              >
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M18 6c0 2-2 2-2 4v10a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2V10c0-2-2-2-2-4V2h12z"/>
+                  <line x1="6" x2="18" y1="6" y2="6"/>
+                  <line x1="12" x2="12" y1="12" y2="12"/>
+                </svg>
+              </button>
+
+              {/* Кнопка камеры */}
+              <button 
+                className="w-16 h-16 rounded-full flex items-center justify-center backdrop-blur-xl"
+                style={{ 
+                  background: 'rgba(255, 255, 255, 0.12)',
+                  border: '1px solid rgba(255, 255, 255, 0.15)',
+                  boxShadow: '0 4px 20px rgba(0, 0, 0, 0.4)'
+                }}
+              >
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/>
+                  <circle cx="12" cy="13" r="3"/>
+                </svg>
+              </button>
+            </div>
+
+            {/* Home Indicator */}
+            <div className="flex justify-center">
+              <div className="w-32 h-1 bg-white/30 rounded-full"></div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // Рендеринг приложения
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>
